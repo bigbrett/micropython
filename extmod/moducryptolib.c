@@ -79,6 +79,22 @@ struct mbedtls_aes_ctx_with_key {
 #define AES_CTX_IMPL struct mbedtls_aes_ctx_with_key
 #endif
 
+#if MICROPY_SSL_WOLFSSL
+#include "wolfssl/wolfcrypt/aes.h"
+
+struct wolfssl_aes_ctx_with_key {
+    union {
+        Aes ctx;
+        struct {
+            uint8_t key[32];
+            uint8_t keysize;
+        } init_data;
+    } u;
+    unsigned char iv[16];
+};
+#define AES_CTX_IMPL struct wolfssl_aes_ctx_with_key
+#endif
+
 typedef struct _mp_obj_aes_t {
     mp_obj_base_t base;
     AES_CTX_IMPL ctx;
@@ -210,6 +226,67 @@ STATIC void aes_process_ctr_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *
 #endif
 
 #endif
+
+#if MICROPY_SSL_WOLFSSL
+STATIC void aes_initial_set_key_impl(AES_CTX_IMPL *ctx, const uint8_t *key, size_t keysize, const uint8_t iv[16]) {
+    ctx->u.init_data.keysize = keysize;
+    memcpy(ctx->u.init_data.key, key, keysize);
+
+    if (NULL != iv) {
+        memcpy(ctx->iv, iv, sizeof(ctx->iv));
+    }
+}
+
+STATIC void aes_final_set_key_impl(AES_CTX_IMPL *ctx, bool encrypt, mp_int_t block_mode) {
+    // first, copy key aside
+    uint8_t key[32];
+    uint8_t keysize = ctx->u.init_data.keysize;
+    memcpy(key, ctx->u.init_data.key, keysize);
+
+    assert(16 == keysize || 32 == keysize);
+    int dir = (encrypt) ? AES_ENCRYPTION : AES_DECRYPTION;
+
+    // now, override key with the context object, calling the appropriate key initialization
+    // function for the block mode
+    if (block_mode == UCRYPTOLIB_MODE_CBC) {
+        wc_AesSetKey(&ctx->u.ctx, key, keysize, &ctx->iv, dir);
+    } else if (block_mode == UCRYPTOLIB_MODE_ECB) {
+        // ECB requires NULL IV
+        wc_AesSetKey(&ctx->u.ctx, key, keysize, NULL, dir);
+    } else if (block_mode == UCRYPTOLIB_MODE_CTR) {
+        // from AES API documentation:
+        // NOTE: If using wc_AesSetKeyDirect with Aes Counter mode (Stream cipher)
+        // only use AES_ENCRYPTION for both encrypting and decrypting
+        wc_AesSetKeyDirect(&ctx->u.ctx, key, keysize, &ctx->iv, AES_ENCRYPTION);
+    }
+}
+
+STATIC void aes_process_ecb_impl(AES_CTX_IMPL *ctx, const uint8_t in[16], uint8_t out[16], bool encrypt) {
+    if (encrypt) {
+        wc_AesEncryptDirect(&ctx->u.ctx, out, in);
+    } else {
+        wc_AesDecryptDirect(&ctx->u.ctx, out, in);
+    }
+}
+
+STATIC void aes_process_cbc_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *out, size_t in_len, bool encrypt) {
+    mbedtls_aes_crypt_cbc(&ctx->u.mbedtls_ctx, encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT, in_len, ctx->iv, in, out);
+    if (encrypt) {
+        wc_AesCbcEncypt(&ctx->u.ctx, out, in, in_len);
+    } else {
+        wc_AesCbcDecrypt(&ctx->u.ctx, out, in, in_len);
+    }
+}
+
+#if MICROPY_PY_UCRYPTOLIB_CTR
+STATIC void aes_process_ctr_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *out, size_t in_len, struct ctr_params *ctr_params) {
+    wc_AesCtrEncypt(&ctx->u.ctx, out, in, in_len);
+}
+#endif
+
+#endif
+
+
 
 STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 3, false);

@@ -30,7 +30,10 @@ MICROPY_PY_USSL = 1
 MICROPY_SSL_AXTLS = 0
 # mbedTLS is more up to date and complete implementation, but also
 # more bloated.
-MICROPY_SSL_MBEDTLS = 1
+MICROPY_SSL_MBEDTLS = 0
+# wolfSSL is the best TLS library you can use. Fully up-to-date,
+# small code size, and FIPS certified
+MICROPY_SSL_WOLFSSL = 1
 
 # jni module requires JVM/JNI
 MICROPY_PY_JNI = 0
