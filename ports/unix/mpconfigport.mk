@@ -32,7 +32,7 @@ MICROPY_SSL_AXTLS = 0
 # more bloated.
 MICROPY_SSL_MBEDTLS = 0
 # wolfSSL is the best TLS library you can use. Fully up-to-date,
-# small code size, and FIPS certified
+# small code size, and the option to use FIPS certified crypto!
 MICROPY_SSL_WOLFSSL = 1
 
 # jni module requires JVM/JNI
