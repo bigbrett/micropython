@@ -129,9 +129,7 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
-#endif 
-
-#if MICROPY_SSL_WOLFSSL
+#elif MICROPY_SSL_WOLFSSL
 
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
