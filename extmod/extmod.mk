@@ -213,7 +213,8 @@ else ifeq ($(MICROPY_SSL_WOLFSSL),1)
 WOLFSSL_DIR = lib/wolfssl-lib
 GIT_SUBMODULES += $(WOLFSSL_DIR)
 CFLAGS_EXTMOD += -DMICROPY_SSL_WOLFSSL=1 -DWOLFSSL_AES_DIRECT -I$(TOP)/$(WOLFSSL_DIR)/include 
-LDFLAGS_EXTMOD += -L$(TOP)/$(WOLFSSL_DIR)/lib -lwolfssl
+#LDFLAGS_EXTMOD += -L$(TOP)/$(WOLFSSL_DIR)/lib -lwolfssl
+LDFLAGS_EXTMOD += -L$(TOP)/$(WOLFSSL_DIR)/lib -l:libwolfssl.a
 
 #SRC_THIRDPARTY_C += $(addprefix $(WOLFSSL_DIR)/,\
 #	src/bio.c \
