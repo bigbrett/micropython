@@ -32,6 +32,7 @@ SRC_EXTMOD_C += \
 	extmod/modusocket.c \
 	extmod/modussl_axtls.c \
 	extmod/modussl_mbedtls.c \
+	extmod/modussl_wolfssl.c \
 	extmod/modutimeq.c \
 	extmod/moduwebsocket.c \
 	extmod/moduzlib.c \
