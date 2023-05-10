@@ -48,7 +48,7 @@
 
 #include "wolfssl/ssl.h"
 
-#define WOLFSSL_DEBUG 1
+#define WOLFSSL_DEBUG 0
 
 #define MP_STREAM_POLL_RDWR (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)
 

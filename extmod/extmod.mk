@@ -32,7 +32,6 @@ SRC_EXTMOD_C += \
 	extmod/modusocket.c \
 	extmod/modussl_axtls.c \
 	extmod/modussl_mbedtls.c \
-	extmod/modussl_wolfssl.c \
 	extmod/modutimeq.c \
 	extmod/moduwebsocket.c \
 	extmod/moduzlib.c \
@@ -211,90 +210,93 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	xtea.c \
 	)
 else ifeq ($(MICROPY_SSL_WOLFSSL),1)
-WOLFSSL_DIR = lib/wolfssl-lib
-GIT_SUBMODULES += $(WOLFSSL_DIR)
-CFLAGS_EXTMOD += -DMICROPY_SSL_WOLFSSL=1 -DWOLFSSL_AES_DIRECT -I$(TOP)/$(WOLFSSL_DIR)/include 
-#LDFLAGS_EXTMOD += -L$(TOP)/$(WOLFSSL_DIR)/lib -lwolfssl
-LDFLAGS_EXTMOD += -L$(TOP)/$(WOLFSSL_DIR)/lib -l:libwolfssl.a
 
-#SRC_THIRDPARTY_C += $(addprefix $(WOLFSSL_DIR)/,\
-#	src/bio.c \
-#	src/crl.c \
-#	src/internal.c \
-#	src/keys.c \
-#	src/ocsp.c \
-#	src/sniffer.c \
-#	src/ssl.c \
-#	src/tls.c \
-#	src/tls13.c \
-#	src/wolfio.c \
-#	wolfcrypt/src/aes.c \
-#	wolfcrypt/src/cmac.c \
-#	wolfcrypt/src/des3.c \
-#	wolfcrypt/src/dh.c \
-#	wolfcrypt/src/ecc.c \
-#	wolfcrypt/src/hmac.c \
-#	wolfcrypt/src/random.c \
-#	wolfcrypt/src/rsa.c \
-#	wolfcrypt/src/sha.c \
-#	wolfcrypt/src/sha256.c \
-#	wolfcrypt/src/sha512.c \
-#	wolfcrypt/src/sha3.c \
-#	wolfcrypt/src/asm.c \
-#	wolfcrypt/src/asn.c \
-#	wolfcrypt/src/blake2s.c \
-#	wolfcrypt/src/chacha.c \
-#	wolfcrypt/src/chacha20_poly1305.c \
-#	wolfcrypt/src/coding.c \
-#	wolfcrypt/src/compress.c \
-#	wolfcrypt/src/cpuid.c \
-#	wolfcrypt/src/cryptocb.c \
-#	wolfcrypt/src/curve25519.c \
-#	wolfcrypt/src/curve448.c \
-#	wolfcrypt/src/ecc_fp.c \
-#	wolfcrypt/src/eccsi.c \
-#	wolfcrypt/src/ed25519.c \
-#	wolfcrypt/src/ed448.c \
-#	wolfcrypt/src/error.c \
-#	wolfcrypt/src/evp.c \
-#	wolfcrypt/src/fe_448.c \
-#	wolfcrypt/src/fe_low_mem.c \
-#	wolfcrypt/src/fe_operations.c \
-#	wolfcrypt/src/ge_448.c \
-#	wolfcrypt/src/ge_low_mem.c \
-#	wolfcrypt/src/ge_operations.c \
-#	wolfcrypt/src/hash.c \
-#	wolfcrypt/src/kdf.c \
-#	wolfcrypt/src/integer.c \
-#	wolfcrypt/src/logging.c \
-#	wolfcrypt/src/md5.c \
-#	wolfcrypt/src/memory.c \
-#	wolfcrypt/src/misc.c \
-#	wolfcrypt/src/pkcs12.c \
-#	wolfcrypt/src/pkcs7.c \
-#	wolfcrypt/src/poly1305.c \
-#	wolfcrypt/src/pwdbased.c \
-#	wolfcrypt/src/rc2.c \
-#	wolfcrypt/src/sakke.c \
-#	wolfcrypt/src/signature.c \
-#	wolfcrypt/src/srp.c \
-#	wolfcrypt/src/sp_arm32.c \
-#	wolfcrypt/src/sp_arm64.c \
-#	wolfcrypt/src/sp_armthumb.c \
-#	wolfcrypt/src/sp_c32.c \
-#	wolfcrypt/src/sp_c64.c \
-#	wolfcrypt/src/sp_cortexm.c \
-#	wolfcrypt/src/sp_dsp32.c \
-#	wolfcrypt/src/sp_int.c \
-#	wolfcrypt/src/sp_x86_64.c \
-#	wolfcrypt/src/tfm.c \
-#	wolfcrypt/src/wc_dsp.c \
-#	wolfcrypt/src/wc_encrypt.c \
-#	wolfcrypt/src/wc_pkcs11.c \
-#	wolfcrypt/src/wc_port.c \
-#	wolfcrypt/src/wolfevent.c \
-#	wolfcrypt/src/wolfmath.c \
-#	)
+#WOLFSSL_DIR = lib/wolfssl-lib
+#GIT_SUBMODULES += $(WOLFSSL_DIR)
+#CFLAGS_EXTMOD += -DMICROPY_SSL_WOLFSSL=1 -DWOLFSSL_AES_DIRECT -I$(TOP)/$(WOLFSSL_DIR)/include 
+#LDFLAGS_EXTMOD += -L$(TOP)/$(WOLFSSL_DIR)/lib -lwolfssl
+#LDFLAGS_EXTMOD += -L$(TOP)/$(WOLFSSL_DIR)/lib -l:libwolfssl.a
+
+WOLFSSL_DIR = lib/wolfssl
+WOLFSSL_USER_SETTINGS_DIR ?= wolfssl
+GIT_SUBMODULES += $(WOLFSSL_DIR)
+CFLAGS_EXTMOD += -DMICROPY_SSL_WOLFSSL=1 -DWOLFSSL_USER_SETTINGS -I$(WOLFSSL_USER_SETTINGS_DIR) -I$(TOP)/$(WOLFSSL_DIR)/ -I$(TOP)/$(WOLFSSL_DIR)/wolfssl
+#CFLAGS_EXTMOD += -DMICROPY_SSL_WOLFSSL=1 -DWOLFSSL_USER_SETTINGS -I$(WOLFSSL_USER_SETTINGS_DIR) -I/home/brett/workspace/wolfssl/customer-repos/micropython/lib/wolfssl/wolfssl
+SRC_THIRDPARTY_C += $(addprefix $(WOLFSSL_DIR)/,\
+	src/crl.c \
+	src/internal.c \
+	src/keys.c \
+	src/ocsp.c \
+	src/sniffer.c \
+	src/ssl.c \
+	src/tls.c \
+	src/tls13.c \
+	src/wolfio.c \
+	wolfcrypt/src/aes.c \
+	wolfcrypt/src/cmac.c \
+	wolfcrypt/src/des3.c \
+	wolfcrypt/src/dh.c \
+	wolfcrypt/src/ecc.c \
+	wolfcrypt/src/hmac.c \
+	wolfcrypt/src/random.c \
+	wolfcrypt/src/rsa.c \
+	wolfcrypt/src/sha.c \
+	wolfcrypt/src/sha256.c \
+	wolfcrypt/src/sha512.c \
+	wolfcrypt/src/sha3.c \
+	wolfcrypt/src/asm.c \
+	wolfcrypt/src/asn.c \
+	wolfcrypt/src/blake2s.c \
+	wolfcrypt/src/chacha.c \
+	wolfcrypt/src/chacha20_poly1305.c \
+	wolfcrypt/src/coding.c \
+	wolfcrypt/src/compress.c \
+	wolfcrypt/src/cpuid.c \
+	wolfcrypt/src/cryptocb.c \
+	wolfcrypt/src/curve25519.c \
+	wolfcrypt/src/curve448.c \
+	wolfcrypt/src/ecc_fp.c \
+	wolfcrypt/src/eccsi.c \
+	wolfcrypt/src/ed25519.c \
+	wolfcrypt/src/ed448.c \
+	wolfcrypt/src/error.c \
+	wolfcrypt/src/fe_448.c \
+	wolfcrypt/src/fe_low_mem.c \
+	wolfcrypt/src/fe_operations.c \
+	wolfcrypt/src/ge_448.c \
+	wolfcrypt/src/ge_low_mem.c \
+	wolfcrypt/src/ge_operations.c \
+	wolfcrypt/src/hash.c \
+	wolfcrypt/src/kdf.c \
+	wolfcrypt/src/integer.c \
+	wolfcrypt/src/logging.c \
+	wolfcrypt/src/md5.c \
+	wolfcrypt/src/memory.c \
+	wolfcrypt/src/pkcs12.c \
+	wolfcrypt/src/pkcs7.c \
+	wolfcrypt/src/poly1305.c \
+	wolfcrypt/src/pwdbased.c \
+	wolfcrypt/src/rc2.c \
+	wolfcrypt/src/sakke.c \
+	wolfcrypt/src/signature.c \
+	wolfcrypt/src/srp.c \
+	wolfcrypt/src/sp_arm32.c \
+	wolfcrypt/src/sp_arm64.c \
+	wolfcrypt/src/sp_armthumb.c \
+	wolfcrypt/src/sp_c32.c \
+	wolfcrypt/src/sp_c64.c \
+	wolfcrypt/src/sp_cortexm.c \
+	wolfcrypt/src/sp_dsp32.c \
+	wolfcrypt/src/sp_int.c \
+	wolfcrypt/src/sp_x86_64.c \
+	wolfcrypt/src/tfm.c \
+	wolfcrypt/src/wc_dsp.c \
+	wolfcrypt/src/wc_encrypt.c \
+	wolfcrypt/src/wc_pkcs11.c \
+	wolfcrypt/src/wc_port.c \
+	wolfcrypt/src/wolfevent.c \
+	wolfcrypt/src/wolfmath.c \
+	)
 endif
 endif
 
